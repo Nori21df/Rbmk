@@ -5,6 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,9 +32,36 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build --stacktrace
 
+      - name: Smoke test - khởi động server dev
+        run: |
+          mkdir -p run
+          echo "eula=true" > run/eula.txt
+          ./gradlew runServer --console=plain > server.log 2>&1 &
+          PID=$!
+          for i in $(seq 1 90); do
+            if grep -q 'Done (' server.log; then echo "SERVER_STARTED_OK"; break; fi
+            if grep -qiE 'Crash report|Failed to start|Exception in server tick' server.log; then echo "SERVER_CRASHED"; break; fi
+            sleep 5
+          done
+          kill $PID || true
+          pkill -f 'net.neoforged' || true
+          echo "===== Dòng liên quan tới rbmk / lỗi ====="
+          grep -iE 'rbmk|error|exception|warn.*recipe|Couldn.t parse|Parsing error' server.log | grep -viE 'realms|narrator|telemetry' | head -150 || true
+          grep -q 'Done (' server.log
+
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
         with:
           name: rbmk-jar
           path: build/libs/*.jar
           if-no-files-found: error
+
+      - name: Cập nhật bản dev trên Releases
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev
+          name: RBMK Reactor (bản dev mới nhất)
+          prerelease: true
+          files: build/libs/*.jar
+          body: Build tự động từ commit ${{ github.sha }}. Tải file .jar và thả vào thư mục mods của ATM10.
