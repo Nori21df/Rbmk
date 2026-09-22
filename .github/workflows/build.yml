@@ -32,30 +32,21 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build --stacktrace
 
-      - name: Smoke test - khởi động server dev
-        run: |
-          mkdir -p run
-          echo "eula=true" > run/eula.txt
-          ./gradlew runServer --console=plain > server.log 2>&1 &
-          PID=$!
-          for i in $(seq 1 90); do
-            if grep -q 'Done (' server.log; then echo "SERVER_STARTED_OK"; break; fi
-            if grep -qiE 'Crash report|Failed to start|Exception in server tick' server.log; then echo "SERVER_CRASHED"; break; fi
-            sleep 5
-          done
-          kill $PID || true
-          pkill -f 'net.neoforged' || true
-          echo "===== Dòng liên quan tới rbmk / lỗi ====="
-          grep -iE 'rbmk|error|exception|warn.*recipe|Couldn.t parse|Parsing error' server.log | grep -viE 'realms|narrator|telemetry' | head -150 || true
-          grep -q 'Done (' server.log
+      - name: Smoke test NeoForge 21.1.247 (ATM10)
+        id: smoke247
+        continue-on-error: true
+        run: scripts/smoke.sh 21.1.247
+
+      - name: Smoke test NeoForge 21.1.251
+        id: smoke251
+        continue-on-error: true
+        run: scripts/smoke.sh 21.1.251
 
       - name: Đẩy log lên nhánh ci-logs
         if: always()
         run: |
           mkdir -p /tmp/logs
-          cp server.log /tmp/logs/ 2>/dev/null || echo "không có server.log" > /tmp/logs/server.log
-          cp run/logs/latest.log /tmp/logs/ 2>/dev/null || true
-          cp -r run/crash-reports /tmp/logs/ 2>/dev/null || true
+          echo "247=${{ steps.smoke247.outcome }} 251=${{ steps.smoke251.outcome }}" > /tmp/logs/result.txt
           cd /tmp/logs
           git init -q -b ci-logs
           git config user.name "github-actions"
@@ -63,6 +54,10 @@ jobs:
           git add -A
           git commit -qm "Log run ${{ github.run_id }}"
           git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci-logs
+
+      - name: Dừng nếu một trong hai bản NeoForge lỗi
+        if: steps.smoke247.outcome != 'success' || steps.smoke251.outcome != 'success'
+        run: exit 1
 
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
