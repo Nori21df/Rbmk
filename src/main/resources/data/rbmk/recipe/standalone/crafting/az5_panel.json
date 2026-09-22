@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "standalone"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " B ",
+    "CRC",
+    " S "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:stone_button"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "S": {
+      "item": "rbmk:shield_casing"
+    }
+  },
+  "result": {
+    "id": "rbmk:az5_panel",
+    "count": 1
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "mekanism:reaction",
+  "chemical_input": {
+    "amount": 200,
+    "chemical": "mekanism:hydrogen"
+  },
+  "duration": 200,
+  "fluid_input": {
+    "amount": 250,
+    "tag": "minecraft:water"
+  },
+  "item_input": {
+    "item": "bigreactors:graphite_block",
+    "count": 1
+  },
+  "item_output": {
+    "count": 1,
+    "id": "rbmk:nuclear_graphite_block"
+  }
+}

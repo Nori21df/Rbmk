@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "standalone"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BBB",
+    "BBB",
+    "BBB"
+  ],
+  "key": {
+    "B": {
+      "item": "rbmk:nuclear_graphite_billet"
+    }
+  },
+  "result": {
+    "id": "rbmk:nuclear_graphite_block",
+    "count": 1
+  }
+}

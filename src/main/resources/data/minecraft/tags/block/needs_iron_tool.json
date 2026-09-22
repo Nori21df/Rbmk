@@ -1,0 +1,15 @@
+{
+  "values": [
+    "rbmk:nuclear_graphite_block",
+    "rbmk:shield_casing",
+    "rbmk:upper_shield",
+    "rbmk:fuel_channel",
+    "rbmk:control_rod",
+    "rbmk:water_channel",
+    "rbmk:reactor_controller",
+    "rbmk:az5_panel",
+    "rbmk:coolant_port",
+    "rbmk:steam_port",
+    "rbmk:energy_port"
+  ]
+}

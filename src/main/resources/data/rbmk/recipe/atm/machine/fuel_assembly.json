@@ -1,0 +1,31 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "modern_industrialization:assembler",
+  "duration": 400,
+  "eu": 32,
+  "item_inputs": [
+    {
+      "amount": 6,
+      "item": "rbmk:enriched_pellet"
+    },
+    {
+      "amount": 3,
+      "item": "rbmk:pressure_tube"
+    },
+    {
+      "amount": 2,
+      "tag": "c:plates/stainless_steel"
+    }
+  ],
+  "item_outputs": [
+    {
+      "amount": 1,
+      "item": "rbmk:fuel_assembly"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZCZ",
+    "H H",
+    "ZCZ"
+  ],
+  "key": {
+    "Z": {
+      "item": "rbmk:zircaloy_ingot"
+    },
+    "C": {
+      "item": "oritech:reinforced_carbon_sheet"
+    },
+    "H": {
+      "item": "mekanism:hdpe_sheet"
+    }
+  },
+  "result": {
+    "id": "rbmk:pressure_tube",
+    "count": 2
+  }
+}

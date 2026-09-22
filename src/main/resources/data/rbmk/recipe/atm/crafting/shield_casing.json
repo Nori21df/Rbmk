@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LBL",
+    "BNB",
+    "LBL"
+  ],
+  "key": {
+    "L": {
+      "tag": "c:ingots/lead"
+    },
+    "B": {
+      "item": "modern_industrialization:blastproof_alloy_plate"
+    },
+    "N": {
+      "item": "modern_industrialization:nuclear_casing"
+    }
+  },
+  "result": {
+    "id": "rbmk:shield_casing",
+    "count": 4
+  }
+}

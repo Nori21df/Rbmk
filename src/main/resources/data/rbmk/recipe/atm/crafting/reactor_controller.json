@@ -1,0 +1,39 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "UHU",
+    "PAP",
+    "VCV"
+  ],
+  "key": {
+    "U": {
+      "item": "allthemodium:unobtainium_ingot"
+    },
+    "H": {
+      "item": "oritech:heisenberg_compensator"
+    },
+    "P": {
+      "item": "modern_industrialization:processing_unit"
+    },
+    "A": {
+      "item": "oritech:super_ai_chip"
+    },
+    "V": {
+      "item": "allthemodium:vibranium_ingot"
+    },
+    "C": {
+      "item": "mekanism:ultimate_control_circuit"
+    }
+  },
+  "result": {
+    "id": "rbmk:reactor_controller",
+    "count": 1
+  }
+}

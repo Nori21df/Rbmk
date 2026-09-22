@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "standalone"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LBL",
+    "BNB",
+    "LBL"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:iron_block"
+    },
+    "B": {
+      "item": "minecraft:obsidian"
+    },
+    "N": {
+      "item": "minecraft:crying_obsidian"
+    }
+  },
+  "result": {
+    "id": "rbmk:shield_casing",
+    "count": 4
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "standalone"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "rbmk:shield_casing"
+    },
+    {
+      "item": "minecraft:cauldron"
+    },
+    {
+      "item": "rbmk:zircaloy_ingot"
+    },
+    {
+      "item": "rbmk:zircaloy_ingot"
+    }
+  ],
+  "result": {
+    "id": "rbmk:steam_port",
+    "count": 1
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "modern_industrialization:compressor",
+  "duration": 200,
+  "eu": 16,
+  "item_inputs": [
+    {
+      "amount": 2,
+      "item": "rbmk:uo2_powder"
+    }
+  ],
+  "item_outputs": [
+    {
+      "amount": 1,
+      "item": "rbmk:enriched_pellet"
+    }
+  ]
+}

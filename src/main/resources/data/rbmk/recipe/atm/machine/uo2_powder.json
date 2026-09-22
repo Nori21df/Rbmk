@@ -1,0 +1,26 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "mekanism:reaction",
+  "chemical_input": {
+    "amount": 100,
+    "chemical": "mekanism:fissile_fuel"
+  },
+  "duration": 100,
+  "fluid_input": {
+    "amount": 250,
+    "tag": "minecraft:water"
+  },
+  "item_input": {
+    "tag": "c:ingots/uranium",
+    "count": 1
+  },
+  "item_output": {
+    "count": 1,
+    "id": "rbmk:uo2_powder"
+  }
+}

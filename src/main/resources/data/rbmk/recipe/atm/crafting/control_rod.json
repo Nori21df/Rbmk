@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LKL",
+    " T ",
+    " G "
+  ],
+  "key": {
+    "L": {
+      "item": "mekanism:dust_lithium"
+    },
+    "K": {
+      "item": "modern_industrialization:cadmium_control_rod"
+    },
+    "T": {
+      "item": "rbmk:pressure_tube"
+    },
+    "G": {
+      "item": "rbmk:nuclear_graphite_billet"
+    }
+  },
+  "result": {
+    "id": "rbmk:control_rod",
+    "count": 1
+  }
+}

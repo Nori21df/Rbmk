@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " B ",
+    "OCO",
+    " S "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:stone_button"
+    },
+    "O": {
+      "item": "oritech:processing_unit"
+    },
+    "C": {
+      "item": "mekanism:ultimate_control_circuit"
+    },
+    "S": {
+      "item": "rbmk:shield_casing"
+    }
+  },
+  "result": {
+    "id": "rbmk:az5_panel",
+    "count": 1
+  }
+}

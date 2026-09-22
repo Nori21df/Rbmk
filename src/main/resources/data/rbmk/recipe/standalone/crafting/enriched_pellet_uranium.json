@@ -1,0 +1,32 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "standalone"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:ingots/uranium"
+      }
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "c:ingots/uranium"
+    },
+    {
+      "tag": "c:ingots/uranium"
+    },
+    {
+      "item": "rbmk:nuclear_graphite_billet"
+    }
+  ],
+  "result": {
+    "id": "rbmk:enriched_pellet",
+    "count": 2
+  }
+}

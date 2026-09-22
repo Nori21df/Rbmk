@@ -1,0 +1,27 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "standalone"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PZP",
+    "PZP",
+    "PZP"
+  ],
+  "key": {
+    "P": {
+      "item": "rbmk:enriched_pellet"
+    },
+    "Z": {
+      "item": "rbmk:pressure_tube"
+    }
+  },
+  "result": {
+    "id": "rbmk:fuel_assembly",
+    "count": 1
+  }
+}

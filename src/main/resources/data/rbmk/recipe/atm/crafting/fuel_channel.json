@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZTZ",
+    "TGT",
+    "ZTZ"
+  ],
+  "key": {
+    "Z": {
+      "item": "rbmk:zircaloy_ingot"
+    },
+    "T": {
+      "item": "rbmk:pressure_tube"
+    },
+    "G": {
+      "item": "rbmk:nuclear_graphite_block"
+    }
+  },
+  "result": {
+    "id": "rbmk:fuel_channel",
+    "count": 1
+  }
+}

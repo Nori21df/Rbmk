@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZTZ",
+    "TWT",
+    "ZTZ"
+  ],
+  "key": {
+    "Z": {
+      "item": "rbmk:zircaloy_ingot"
+    },
+    "T": {
+      "item": "rbmk:pressure_tube"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    }
+  },
+  "result": {
+    "id": "rbmk:water_channel",
+    "count": 1
+  }
+}

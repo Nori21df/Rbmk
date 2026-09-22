@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "rbmk:block/control_rod",
+    "side": "rbmk:block/control_rod_side"
+  }
+}

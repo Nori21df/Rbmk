@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "rbmk:block/az5_panel"
+    },
+    "powered=true": {
+      "model": "rbmk:block/az5_panel"
+    }
+  }
+}

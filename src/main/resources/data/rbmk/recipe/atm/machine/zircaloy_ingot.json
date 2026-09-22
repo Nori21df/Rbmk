@@ -1,0 +1,27 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "modern_industrialization:blast_furnace",
+  "duration": 600,
+  "eu": 128,
+  "item_inputs": [
+    {
+      "amount": 3,
+      "tag": "c:dusts/titanium"
+    },
+    {
+      "amount": 1,
+      "tag": "c:dusts/osmium"
+    }
+  ],
+  "item_outputs": [
+    {
+      "amount": 2,
+      "item": "rbmk:zircaloy_ingot"
+    }
+  ]
+}

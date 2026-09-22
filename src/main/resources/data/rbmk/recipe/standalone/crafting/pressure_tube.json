@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "standalone"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZCZ",
+    "H H",
+    "ZCZ"
+  ],
+  "key": {
+    "Z": {
+      "item": "rbmk:zircaloy_ingot"
+    },
+    "C": {
+      "item": "minecraft:blaze_rod"
+    },
+    "H": {
+      "item": "minecraft:copper_ingot"
+    }
+  },
+  "result": {
+    "id": "rbmk:pressure_tube",
+    "count": 2
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "rbmk:pack_mode",
+      "mode": "atm"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "rbmk:shield_casing"
+    },
+    {
+      "item": "mekanism:ultimate_energy_cube"
+    },
+    {
+      "item": "rbmk:zircaloy_ingot"
+    },
+    {
+      "item": "rbmk:zircaloy_ingot"
+    }
+  ],
+  "result": {
+    "id": "rbmk:energy_port",
+    "count": 1
+  }
+}
