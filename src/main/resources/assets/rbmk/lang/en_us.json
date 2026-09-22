@@ -60,5 +60,8 @@
   "status.rbmk.water": "Water: %s mB/t (supply %s%%)",
   "status.rbmk.output": "Steam out: %s mB/t | FE out: %s FE/t",
   "status.rbmk.backpressure": "Steam backpressure: %s%%",
-  "status.rbmk.az5": "AZ-5 ENGAGED — sneak + right-click to reset once rods are in"
+  "status.rbmk.az5": "AZ-5 ENGAGED — sneak + right-click to reset once rods are in",
+  "status.rbmk.fuel": "Fuel loaded: %s / %s channel blocks",
+  "status.rbmk.no_coolant_port": "⚠ No Coolant Port — the reactor cannot be cooled!",
+  "status.rbmk.no_output_port": "⚠ No Steam Port or Energy Port — steam has nowhere to go!"
 }

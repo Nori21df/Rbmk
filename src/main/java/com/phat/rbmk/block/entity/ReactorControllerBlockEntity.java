@@ -46,6 +46,10 @@ public class ReactorControllerBlockEntity extends BlockEntity {
     private double waterPerTick;
     private double fePerTick;
     private double setpoint;
+    private int loadedFuel;
+    private int fuelSlots;
+    private int coolantPorts;
+    private int outputPorts;
 
     public ReactorControllerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONTROLLER.get(), pos, state);
@@ -112,6 +116,8 @@ public class ReactorControllerBlockEntity extends BlockEntity {
     private void simulate(ServerLevel level, HexStructure s, ReactorSim sim, double dt, int interval) {
         // 1) Nhiên liệu từng cột
         List<List<FuelChannelBlockEntity>> fuelByCell = new ArrayList<>(s.cells().size());
+        int loadedTotal = 0;
+        int slotTotal = 0;
         for (int i = 0; i < s.cells().size(); i++) {
             HexStructure.Cell cell = s.cells().get(i);
             List<FuelChannelBlockEntity> list = new ArrayList<>();
@@ -128,6 +134,8 @@ public class ReactorControllerBlockEntity extends BlockEntity {
                     }
                 }
                 sim.setFuel(i, loaded, loaded > 0 ? burn / loaded : 0.0);
+                loadedTotal += loaded;
+                slotTotal += cell.blocks().size();
             }
             fuelByCell.add(list);
         }
@@ -147,6 +155,10 @@ public class ReactorControllerBlockEntity extends BlockEntity {
         }
         long water = 0;
         for (PortBlockEntity c : coolant) water += c.getWater();
+        loadedFuel = loadedTotal;
+        fuelSlots = slotTotal;
+        coolantPorts = coolant.size();
+        outputPorts = steam.size() + energy.size();
 
         // 3) Mô phỏng
         int signal = level.getBestNeighborSignal(worldPosition);
@@ -320,6 +332,13 @@ public class ReactorControllerBlockEntity extends BlockEntity {
         HexStructure s = structure;
         lines.add(Component.translatable("status.rbmk.core", s.radius(), s.height(),
                 s.countType(ChannelType.FUEL), s.countType(ChannelType.ROD), s.countType(ChannelType.GRAPHITE)));
+        lines.add(colored(Component.translatable("status.rbmk.fuel", loadedFuel, fuelSlots), loadedFuel == 0));
+        if (coolantPorts == 0) {
+            lines.add(Component.translatable("status.rbmk.no_coolant_port").withStyle(ChatFormatting.RED));
+        }
+        if (outputPorts == 0) {
+            lines.add(Component.translatable("status.rbmk.no_output_port").withStyle(ChatFormatting.RED));
+        }
         lines.add(line("status.rbmk.power", pct(sim.avgPower()), pct(setpoint)));
         double rupture = RbmkServerConfig.RUPTURE_TEMP.get();
         lines.add(colored(Component.translatable("status.rbmk.temp", Math.round(sim.maxTemp()), Math.round(rupture)),

@@ -60,5 +60,8 @@
   "status.rbmk.water": "Nước: %s mB/t (đáp ứng %s%%)",
   "status.rbmk.output": "Hơi ra: %s mB/t | FE ra: %s FE/t",
   "status.rbmk.backpressure": "Áp suất hơi ngược: %s%%",
-  "status.rbmk.az5": "AZ-5 ĐANG KÍCH HOẠT — Shift + chuột phải để reset khi rod đã cắm hết"
+  "status.rbmk.az5": "AZ-5 ĐANG KÍCH HOẠT — Shift + chuột phải để reset khi rod đã cắm hết",
+  "status.rbmk.fuel": "Nhiên liệu đã nạp: %s / %s khối kênh",
+  "status.rbmk.no_coolant_port": "⚠ Chưa có Coolant Port — lò không được làm mát!",
+  "status.rbmk.no_output_port": "⚠ Chưa có Steam Port hoặc Energy Port — hơi không có chỗ thoát!"
 }
