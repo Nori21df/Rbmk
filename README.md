@@ -95,8 +95,9 @@ Nhiều graphite quá thì ít nhiên liệu → yếu; quá ít rod thì **khô
 | Shift + chuột phải Controller | Reset AZ-5 (chỉ khi rod đã cắm hết) |
 | Comparator từ Controller | Nhiệt độ cao nhất / ngưỡng vỡ kênh × 15 |
 | Chuột phải / xung redstone vào AZ-5 Panel | **SCRAM** — cắm toàn bộ rod |
-| Chuột phải Fuel Channel bằng Fuel Assembly | Nạp nhiên liệu |
-| Chuột phải Fuel Channel tay không | Rút nhiên liệu (rút khi lò đang chạy = nhiễm xạ) |
+| Bỏ Fuel Assembly vào ô **Nạp nhiên liệu** trong GUI Controller | Controller tự nạp vào mọi Fuel Channel còn trống (mỗi giây), kể cả khi lò đang chạy |
+| Ô **Đã cháy** trong GUI | Controller tự rút bó đã cháy ra đây. Hết chỗ thì kênh đó giữ bó cũ và không được nạp mới |
+| Ống / phễu vào Controller | Chỉ đẩy được nhiên liệu mới vào; rút ra chỉ lấy được bó đã cháy |
 
 **Port:**
 - **Coolant Port** — bơm nước vào (64 000 mB). Lò tiêu thụ khoảng **20 mB/tick cho mỗi khối nhiên liệu** ở 100%.

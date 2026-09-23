@@ -14,11 +14,14 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
+import com.phat.rbmk.block.entity.FuelInputHandler;
+import com.phat.rbmk.block.entity.SpentOutputHandler;
 
 /** GUI bộ điều khiển: bản đồ lõi lục giác theo nhiệt độ + số liệu + nút điều khiển. */
 public class ReactorControllerScreen extends AbstractContainerScreen<ReactorControllerMenu> {
     private static final int W = 344;
-    private static final int H = 222;
+    private static final int H = 318;
     private static final int MAP_X = 8;
     private static final int MAP_Y = 22;
     private static final int MAP_SIZE = 176;
@@ -104,12 +107,29 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
         g.fill(x, y, x + W, y + H, C_BG);
         g.fill(x + MAP_X - 2, y + MAP_Y - 2, x + MAP_X + MAP_SIZE + 2, y + MAP_Y + MAP_SIZE + 2, C_PANEL);
         g.fill(x + PANEL_X - 4, y + 18, x + W - 4, y + 152, C_PANEL);
+        // Vách ngăn phần kho đồ
+        g.fill(x + 6, y + 223, x + W - 6, y + 224, C_FRAME);
+        // Nền các ô
+        for (Slot slot : menu.slots) {
+            int sx = x + slot.x - 1;
+            int sy = y + slot.y - 1;
+            int border = slot.index < FuelInputHandler.SLOTS ? 0xFF2F6FD6
+                    : slot.index < FuelInputHandler.SLOTS + SpentOutputHandler.SLOTS ? 0xFF9A5A2A : 0xFF4A5261;
+            g.fill(sx, sy, sx + 18, sy + 18, border);
+            g.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF0F1218);
+        }
+        // Mũi tên: nạp vào lò -> ra ô đã cháy
+        g.drawString(font, "→", x + 61, y + ReactorControllerMenu.INV_TOP + 22, C_DIM, false);
     }
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
         // Toạ độ ở đây đã được dịch về góc GUI
         g.drawString(font, title, 8, 7, 0xFFFFAA00, false);
+        int labelY = ReactorControllerMenu.INV_TOP - 11;
+        g.drawString(font, Component.translatable("gui.rbmk.fuel_in"), ReactorControllerMenu.FUEL_X - 1, labelY, 0xFF6EA8FF, false);
+        g.drawString(font, Component.translatable("gui.rbmk.fuel_out"), ReactorControllerMenu.SPENT_X - 1, labelY, 0xFFE0A060, false);
+        g.drawString(font, playerInventoryTitle, ReactorControllerMenu.PLAYER_X - 1, labelY, C_DIM, false);
         ReactorStatusPayload d = data();
         if (d == null) {
             g.drawString(font, Component.translatable("gui.rbmk.waiting"), 8, MAP_Y + 4, C_DIM, false);

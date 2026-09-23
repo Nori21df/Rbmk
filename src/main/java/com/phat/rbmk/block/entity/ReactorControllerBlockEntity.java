@@ -31,6 +31,9 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraft.world.item.ItemStack;
+import com.phat.rbmk.registry.ModItems;
 
 public class ReactorControllerBlockEntity extends BlockEntity implements MenuProvider {
     private static final int VALIDATE_INTERVAL = 40;
@@ -57,6 +60,12 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     private int fuelSlots;
     private int coolantPorts;
     private int outputPorts;
+
+    // Kho nhiên liệu: controller tự nạp vào / rút ra khỏi các Fuel Channel
+    private static final int REFUEL_INTERVAL = 20;
+    private final FuelInputHandler fuelInput = new FuelInputHandler(this::setChanged);
+    private final SpentOutputHandler spentOutput = new SpentOutputHandler(this::setChanged);
+    private final IItemHandler automation = new AutomationHandler();
 
     // Điều khiển từ GUI
     private boolean manualMode;
@@ -85,6 +94,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         if (structure == null || sim == null) {
             updateComparator(level, 0);
             return;
+        }
+        if (ticks % REFUEL_INTERVAL == 0) {
+            autoRefuel(level, structure);
         }
         int interval = RbmkServerConfig.SIM_INTERVAL.get();
         if (ticks % interval != 0) {
@@ -318,6 +330,86 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
 
     public int getComparatorOutput() { return comparator; }
 
+    // =====================================================================
+    // Tự nạp nhiên liệu
+    // =====================================================================
+
+    public FuelInputHandler getFuelInput() { return fuelInput; }
+
+    public SpentOutputHandler getSpentOutput() { return spentOutput; }
+
+    public IItemHandler getAutomationHandler() { return automation; }
+
+    /** Rút bó đã cháy ra ô "Đã cháy", nạp bó mới từ ô "Nạp nhiên liệu" vào kênh trống. */
+    private void autoRefuel(ServerLevel level, HexStructure s) {
+        for (HexStructure.Cell cell : s.cells()) {
+            if (cell.type() != ChannelType.FUEL) continue;
+            for (BlockPos p : cell.blocks()) {
+                if (!(level.getBlockEntity(p) instanceof FuelChannelBlockEntity fc)) continue;
+                ItemStack current = fc.getFuel();
+                if (!current.isEmpty() && !fc.hasActiveFuel()) {
+                    if (!insertAll(spentOutput, current, true)) continue; // hết chỗ chứa bó đã cháy
+                    insertAll(spentOutput, current, false);
+                    fc.setFuel(ItemStack.EMPTY);
+                    current = ItemStack.EMPTY;
+                }
+                if (current.isEmpty()) {
+                    ItemStack fresh = takeOneFuel();
+                    if (fresh.isEmpty()) return; // hết nhiên liệu mới
+                    fc.setFuel(fresh);
+                }
+            }
+        }
+    }
+
+    private ItemStack takeOneFuel() {
+        for (int i = 0; i < fuelInput.getSlots(); i++) {
+            if (!fuelInput.getStackInSlot(i).isEmpty()) {
+                return fuelInput.extractItem(i, 1, false);
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
+    private static boolean insertAll(net.neoforged.neoforge.items.ItemStackHandler handler, ItemStack stack, boolean simulate) {
+        ItemStack rest = stack.copy();
+        for (int i = 0; i < handler.getSlots() && !rest.isEmpty(); i++) {
+            rest = handler.insertItem(i, rest, simulate);
+        }
+        return rest.isEmpty();
+    }
+
+    /** Cho ống / phễu: 0–8 chỉ nhận nhiên liệu mới, 9–17 chỉ cho rút bó đã cháy. */
+    private final class AutomationHandler implements IItemHandler {
+        @Override
+        public int getSlots() { return FuelInputHandler.SLOTS + SpentOutputHandler.SLOTS; }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            return slot < FuelInputHandler.SLOTS ? fuelInput.getStackInSlot(slot)
+                    : spentOutput.getStackInSlot(slot - FuelInputHandler.SLOTS);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            return slot < FuelInputHandler.SLOTS ? fuelInput.insertItem(slot, stack, simulate) : stack;
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            return slot < FuelInputHandler.SLOTS ? ItemStack.EMPTY
+                    : spentOutput.extractItem(slot - FuelInputHandler.SLOTS, amount, simulate);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) { return 64; }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return slot < FuelInputHandler.SLOTS && fuelInput.isItemValid(slot, stack);
+        }
+    }
+
     /** Nút bấm từ GUI (xem ReactorControllerMenu.BTN_*). */
     public void handleButton(int id) {
         switch (id) {
@@ -355,7 +447,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
-        return new ReactorControllerMenu(containerId, inventory, worldPosition);
+        return new ReactorControllerMenu(containerId, inventory, worldPosition, fuelInput, spentOutput);
     }
 
     public void sendStatusTo(ServerPlayer player) {
@@ -482,6 +574,8 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         tag.putBoolean("az5", az5Latched);
         tag.putDouble("backpressure", backpressure);
         tag.putBoolean("manual", manualMode);
+        tag.put("fuelInput", fuelInput.serializeNBT(registries));
+        tag.put("spentOutput", spentOutput.serializeNBT(registries));
         tag.putDouble("manualSetpoint", manualSetpoint);
         if (sim != null) {
             tag.put("sim", sim.save(registries));
@@ -496,6 +590,8 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         az5Latched = tag.getBoolean("az5");
         backpressure = tag.getDouble("backpressure");
         manualMode = tag.getBoolean("manual");
+        if (tag.contains("fuelInput")) fuelInput.deserializeNBT(registries, tag.getCompound("fuelInput"));
+        if (tag.contains("spentOutput")) spentOutput.deserializeNBT(registries, tag.getCompound("spentOutput"));
         if (tag.contains("manualSetpoint")) manualSetpoint = tag.getDouble("manualSetpoint");
         if (tag.contains("sim")) {
             pendingSimTag = tag.getCompound("sim");

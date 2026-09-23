@@ -20,9 +20,9 @@ public final class ModItems {
 
     // Nhiên liệu
     public static final DeferredItem<FuelAssemblyItem> FUEL_ASSEMBLY = ITEMS.register("fuel_assembly",
-            () -> new FuelAssemblyItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+            () -> new FuelAssemblyItem(new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<Item> SPENT_FUEL_ASSEMBLY = ITEMS.register("spent_fuel_assembly",
-            () -> new Item(new Item.Properties().stacksTo(1)));
+            () -> new Item(new Item.Properties().stacksTo(64)));
 
     // Block items
     public static final DeferredItem<BlockItem> NUCLEAR_GRAPHITE_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.NUCLEAR_GRAPHITE_BLOCK);

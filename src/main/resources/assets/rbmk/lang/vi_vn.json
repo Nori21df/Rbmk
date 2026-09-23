@@ -93,5 +93,7 @@
   "gui.rbmk.cell_water": "Kênh nước",
   "gui.rbmk.cell_pos": "q %s, r %s",
   "gui.rbmk.cell_temp": "Nhiệt độ: %s°C",
-  "gui.rbmk.cell_flux": "Flux: %s%%"
+  "gui.rbmk.cell_flux": "Flux: %s%%",
+  "gui.rbmk.fuel_in": "Nạp nhiên liệu",
+  "gui.rbmk.fuel_out": "Đã cháy"
 }
