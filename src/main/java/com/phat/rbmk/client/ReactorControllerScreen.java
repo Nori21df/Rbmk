@@ -182,7 +182,9 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
         else if (running && d.waterFrac() < 0.9f) warn = Component.translatable("gui.rbmk.warn_water");
         else if (d.backpressure() > 0.1f) warn = Component.translatable("gui.rbmk.warn_steam");
         else if (tFrac > 0.8f) warn = Component.translatable("gui.rbmk.warn_temp");
-        if (warn != null) {
+        if (warn == null && d.formed() && d.loadedFuel() > 0 && d.setpoint() > 0 && d.maxTemp() < 280f) {
+            g.drawWordWrap(font, Component.translatable("gui.rbmk.heating", Math.round(d.maxTemp())), x, 136, right - x, 0xFFFFD166);
+        } else if (warn != null) {
             g.drawWordWrap(font, warn, x, 136, right - x, C_WARN);
         } else {
             g.drawString(font, Component.translatable(d.manual() ? "gui.rbmk.hint_manual" : "gui.rbmk.hint_redstone"),

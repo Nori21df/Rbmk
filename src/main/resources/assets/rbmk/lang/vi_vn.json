@@ -95,5 +95,6 @@
   "gui.rbmk.cell_temp": "Nhiệt độ: %s°C",
   "gui.rbmk.cell_flux": "Flux: %s%%",
   "gui.rbmk.fuel_in": "Nạp nhiên liệu",
-  "gui.rbmk.fuel_out": "Đã cháy"
+  "gui.rbmk.fuel_out": "Đã cháy",
+  "gui.rbmk.heating": "Đang làm nóng (%s°C). Hơi và FE bắt đầu khi trên 280°C."
 }
