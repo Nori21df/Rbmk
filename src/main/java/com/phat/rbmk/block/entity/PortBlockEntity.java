@@ -22,7 +22,7 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 public class PortBlockEntity extends BlockEntity {
     public static final int TANK_CAPACITY = 64_000;
-    public static final int ENERGY_CAPACITY = 4_000_000;
+    public static final int ENERGY_CAPACITY = 64_000_000;
     public static final int MAX_FE_PUSH = 1_000_000;
     public static final int MAX_STEAM_PUSH = 8_000;
 

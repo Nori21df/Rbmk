@@ -148,6 +148,8 @@ Recipe máy của mod khác mà sai format thì bị bỏ qua và ghi log, **kh�
 |---|---|---|
 | `hazards.explosionsEnabled` | true | Cho phép nổ |
 | `hazards.blockDamage` | true | Nổ có phá block |
+| `hazards.steamVent` | true | Hơi không thoát được thì xả bỏ (mất FE nhưng lò vẫn mát). false = nghẽn hơi, lò nóng lên |
+| `hazards.autoProtection` | true | Tự bấm AZ-5 khi thiếu nước / nghẽn hơi 3 giây, hoặc kênh > 85% ngưỡng vỡ |
 | `hazards.autoScramOnUnload` | true | Chunk unload → tắt lò an toàn |
 | `hazards.maxExplosionPower` | 14 | Sức nổ tối đa (TNT = 4) |
 | `hazards.ruptureTemp` | 950 | °C vỡ kênh |

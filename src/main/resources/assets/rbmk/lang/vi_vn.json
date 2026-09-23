@@ -96,5 +96,11 @@
   "gui.rbmk.cell_flux": "Flux: %s%%",
   "gui.rbmk.fuel_in": "Nạp nhiên liệu",
   "gui.rbmk.fuel_out": "Đã cháy",
-  "gui.rbmk.heating": "Đang làm nóng (%s°C). Hơi và FE bắt đầu khi trên 280°C."
+  "gui.rbmk.heating": "Đang làm nóng (%s°C). Hơi và FE bắt đầu khi trên 280°C.",
+  "gui.rbmk.warn_az5_auto": "AZ-5 TỰ ĐỘNG: %s",
+  "gui.rbmk.warn_venting": "Đang xả bỏ %s%% hơi — cần thêm cổng xuất!",
+  "gui.rbmk.trip_temp": "kênh quá nóng",
+  "gui.rbmk.trip_water": "thiếu nước làm mát",
+  "gui.rbmk.trip_steam": "nghẽn hơi",
+  "message.rbmk.auto_trip": "⚠ Bảo vệ tự động của RBMK đã bấm AZ-5: %s"
 }

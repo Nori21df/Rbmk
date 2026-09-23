@@ -175,12 +175,16 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
 
         // Cảnh báo (ưu tiên cái nguy hiểm nhất)
         Component warn = null;
-        if (d.az5()) warn = Component.translatable("gui.rbmk.warn_az5");
+        if (d.az5()) {
+            warn = d.message().getString().isEmpty() ? Component.translatable("gui.rbmk.warn_az5")
+                    : Component.translatable("gui.rbmk.warn_az5_auto", d.message());
+        }
         else if (d.formed() && d.coolantPorts() == 0) warn = Component.translatable("gui.rbmk.warn_no_coolant");
         else if (d.formed() && d.outputPorts() == 0) warn = Component.translatable("gui.rbmk.warn_no_output");
         else if (ormLow) warn = Component.translatable("gui.rbmk.warn_orm");
         else if (running && d.waterFrac() < 0.9f) warn = Component.translatable("gui.rbmk.warn_water");
         else if (d.backpressure() > 0.1f) warn = Component.translatable("gui.rbmk.warn_steam");
+        else if (d.backpressure() < -0.05f) warn = Component.translatable("gui.rbmk.warn_venting", pct(-d.backpressure()));
         else if (tFrac > 0.8f) warn = Component.translatable("gui.rbmk.warn_temp");
         if (warn == null && d.formed() && d.loadedFuel() > 0 && d.setpoint() > 0 && d.maxTemp() < 280f) {
             g.drawWordWrap(font, Component.translatable("gui.rbmk.heating", Math.round(d.maxTemp())), x, 136, right - x, 0xFFFFD166);

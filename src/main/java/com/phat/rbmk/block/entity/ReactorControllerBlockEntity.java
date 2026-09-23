@@ -18,6 +18,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -60,6 +61,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     private int fuelSlots;
     private int coolantPorts;
     private int outputPorts;
+    private double venting;
+    private double protectTimer;
+    @Nullable private String tripReason;
 
     // Kho nhiên liệu: controller tự nạp vào / rút ra khỏi các Fuel Channel
     private static final int REFUEL_INTERVAL = 20;
@@ -218,6 +222,16 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
             steamLeft -= st.acceptSteam((int) Math.floor(steamLeft));
         }
         steamLeft = Math.max(0, steamLeft);
+        venting = 0.0;
+        if (steamLeft > 0 && RbmkServerConfig.STEAM_VENT.get()) {
+            // Van xả hơi: phí năng lượng nhưng lò vẫn được làm mát
+            venting = r.steamMb() > 1 ? Math.min(1.0, steamLeft / r.steamMb()) : 0.0;
+            if (ticks % 20 == 0) {
+                level.sendParticles(ParticleTypes.CLOUD, worldPosition.getX() + 0.5, worldPosition.getY() + 1.2,
+                        worldPosition.getZ() + 0.5, 12, 0.6, 0.3, 0.6, 0.05);
+            }
+            steamLeft = 0;
+        }
         backpressure = r.steamMb() > 1 ? Math.min(1.0, steamLeft / r.steamMb()) : 0.0;
 
         steamPerTick = (r.steamMb() - steamLeft) / interval;
@@ -238,6 +252,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         if (checkHazards(level, s, sim, dt)) {
             return;
         }
+        autoProtect(level, sim, dt);
 
         // 8) Cảnh báo + comparator
         if (ticks % ALARM_INTERVAL == 0) {
@@ -276,6 +291,41 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
             }
         }
         return false;
+    }
+
+    /** Bảo vệ tự động: tự AZ-5 khi thiếu nước / nghẽn hơi kéo dài, hoặc kênh quá nóng. */
+    private void autoProtect(ServerLevel level, ReactorSim sim, double dt) {
+        if (az5Latched || !RbmkServerConfig.AUTO_PROTECTION.get()) {
+            protectTimer = 0;
+            return;
+        }
+        boolean running = sim.avgPower() > 0.02;
+        double rupture = RbmkServerConfig.RUPTURE_TEMP.get();
+        String reason = null;
+        if (sim.maxTemp() > rupture * 0.85) {
+            reason = "gui.rbmk.trip_temp";
+            protectTimer = 99;
+        } else if (running && sim.maxTemp() > 300 && sim.waterFraction() < 0.5) {
+            protectTimer += dt;
+            reason = "gui.rbmk.trip_water";
+        } else if (running && backpressure > 0.5) {
+            protectTimer += dt;
+            reason = "gui.rbmk.trip_steam";
+        } else {
+            protectTimer = 0;
+        }
+        if (reason != null && protectTimer >= 3.0) {
+            triggerAz5();
+            tripReason = reason;
+            Component msg = Component.translatable("message.rbmk.auto_trip", Component.translatable(reason))
+                    .withStyle(ChatFormatting.GOLD);
+            for (Player p : level.players()) {
+                if (p.distanceToSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()) < 48 * 48) {
+                    p.displayClientMessage(msg, false);
+                }
+            }
+            level.playSound(null, worldPosition, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 2.0f, 1.2f);
+        }
     }
 
     private void alarm(ServerLevel level, ReactorSim sim) {
@@ -323,6 +373,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         if (!az5Latched) return false;
         if (sim != null && sim.rodInsertion() < 0.99) return false;
         az5Latched = false;
+        tripReason = null;
         if (sim != null) sim.setScram(false);
         setChanged();
         return true;
@@ -482,7 +533,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
             temps[i] = (float) sm.temp(i);
             fluxes[i] = (float) sm.flux(i);
         }
-        Component msg = formed ? Component.empty()
+        Component msg = formed ? (tripReason != null ? Component.translatable(tripReason) : Component.empty())
                 : (structureError != null ? structureError : Component.translatable("message.rbmk.not_checked"));
         return new ReactorStatusPayload(worldPosition, formed, msg,
                 formed ? s.radius() : 0, formed ? s.height() : 0,
@@ -495,7 +546,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
                 formed ? (float) sm.maxXenon() : 0f,
                 formed ? (float) sm.rodInsertion() : 1f,
                 formed ? (float) sm.waterFraction() : 1f,
-                (float) waterPerTick, (float) steamPerTick, (float) fePerTick, (float) backpressure,
+                (float) waterPerTick, (float) steamPerTick, (float) fePerTick, (float) Math.max(backpressure, -venting),
                 RbmkServerConfig.ORM_WARNING.get().floatValue(),
                 qs, rs, types, temps, fluxes);
     }

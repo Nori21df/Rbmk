@@ -8,6 +8,8 @@ public final class RbmkServerConfig {
 
     // ---- Hazards ----
     public static final ModConfigSpec.BooleanValue EXPLOSIONS_ENABLED;
+    public static final ModConfigSpec.BooleanValue STEAM_VENT;
+    public static final ModConfigSpec.BooleanValue AUTO_PROTECTION;
     public static final ModConfigSpec.BooleanValue BLOCK_DAMAGE;
     public static final ModConfigSpec.BooleanValue AUTO_SCRAM_ON_UNLOAD;
     public static final ModConfigSpec.DoubleValue MAX_EXPLOSION_POWER;
@@ -30,6 +32,10 @@ public final class RbmkServerConfig {
         B.push("hazards");
         EXPLOSIONS_ENABLED = B.comment("Cho phép nổ khi vỡ kênh / meltdown").define("explosionsEnabled", true);
         BLOCK_DAMAGE = B.comment("Vụ nổ có phá block không (false = chỉ sát thương)").define("blockDamage", true);
+        STEAM_VENT = B.comment("Hơi không thoát được qua port thì tự xả ra ngoài (mất năng lượng nhưng lò vẫn được làm mát).",
+                "false = hơi bị nghẽn, lò mất làm mát (khó hơn)").define("steamVent", true);
+        AUTO_PROTECTION = B.comment("Bảo vệ tự động: tự bấm AZ-5 khi thiếu nước, nghẽn hơi hoặc kênh quá nóng.",
+                "Chernobyl xảy ra khi người vận hành tắt hệ thống này.").define("autoProtection", true);
         AUTO_SCRAM_ON_UNLOAD = B.comment("Tự SCRAM an toàn khi chunk bị unload").define("autoScramOnUnload", true);
         MAX_EXPLOSION_POWER = B.comment("Sức nổ tối đa của meltdown (TNT = 4)").defineInRange("maxExplosionPower", 14.0, 0.0, 64.0);
         RUPTURE_TEMP = B.comment("Nhiệt độ vỡ kênh (°C)").defineInRange("ruptureTemp", 950.0, 400.0, 5000.0);

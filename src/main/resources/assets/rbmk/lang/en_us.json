@@ -96,5 +96,11 @@
   "gui.rbmk.cell_flux": "Flux: %s%%",
   "gui.rbmk.fuel_in": "Fresh fuel",
   "gui.rbmk.fuel_out": "Spent fuel",
-  "gui.rbmk.heating": "Heating up (%s°C). Steam & FE start above 280°C."
+  "gui.rbmk.heating": "Heating up (%s°C). Steam & FE start above 280°C.",
+  "gui.rbmk.warn_az5_auto": "AUTO AZ-5: %s",
+  "gui.rbmk.warn_venting": "Venting %s%% of steam — connect more output!",
+  "gui.rbmk.trip_temp": "channel overheating",
+  "gui.rbmk.trip_water": "coolant shortage",
+  "gui.rbmk.trip_steam": "steam blocked",
+  "message.rbmk.auto_trip": "⚠ RBMK automatic protection triggered AZ-5: %s"
 }
