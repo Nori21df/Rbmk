@@ -24,8 +24,10 @@ public class RbmkMod {
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModCreativeTabs.TABS.register(modBus);
         ModConditions.CONDITIONS.register(modBus);
+        ModMenus.MENUS.register(modBus);
 
         modBus.addListener(ModCapabilities::register);
+        modBus.addListener(com.phat.rbmk.network.ModNetwork::register);
 
         container.registerConfig(ModConfig.Type.COMMON, RbmkCommonConfig.SPEC);
         container.registerConfig(ModConfig.Type.SERVER, RbmkServerConfig.SPEC);

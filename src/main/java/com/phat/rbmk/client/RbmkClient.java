@@ -11,6 +11,8 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import com.phat.rbmk.registry.ModMenus;
 
 @Mod(value = RbmkMod.MODID, dist = Dist.CLIENT)
 public class RbmkClient {
@@ -20,6 +22,11 @@ public class RbmkClient {
     public RbmkClient(IEventBus modBus, ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modBus.addListener(RbmkClient::registerClientExtensions);
+        modBus.addListener(RbmkClient::registerScreens);
+    }
+
+    private static void registerScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenus.REACTOR_CONTROLLER.get(), ReactorControllerScreen::new);
     }
 
     private static void registerClientExtensions(RegisterClientExtensionsEvent event) {

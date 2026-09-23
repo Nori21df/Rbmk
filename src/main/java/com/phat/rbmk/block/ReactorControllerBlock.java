@@ -6,6 +6,7 @@ import com.phat.rbmk.registry.ModBlockEntities;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -61,10 +62,9 @@ public class ReactorControllerBlock extends BaseEntityBlock {
                 } else {
                     player.displayClientMessage(Component.translatable("message.rbmk.az5_not_latched"), true);
                 }
-            } else {
-                for (Component line : controller.statusLines()) {
-                    player.displayClientMessage(line, false);
-                }
+            } else if (player instanceof ServerPlayer sp) {
+                sp.openMenu(controller, pos);
+                controller.sendStatusTo(sp);
             }
         }
         return InteractionResult.SUCCESS;

@@ -24,8 +24,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import com.phat.rbmk.menu.ReactorControllerMenu;
+import com.phat.rbmk.network.ReactorStatusPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.neoforged.neoforge.network.PacketDistributor;
 
-public class ReactorControllerBlockEntity extends BlockEntity {
+public class ReactorControllerBlockEntity extends BlockEntity implements MenuProvider {
     private static final int VALIDATE_INTERVAL = 40;
     private static final int ALARM_INTERVAL = 40;
     private static final double RUPTURE_SECONDS = 2.0;
@@ -51,6 +58,10 @@ public class ReactorControllerBlockEntity extends BlockEntity {
     private int coolantPorts;
     private int outputPorts;
 
+    // Điều khiển từ GUI
+    private boolean manualMode;
+    private double manualSetpoint = 0.3;
+
     public ReactorControllerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONTROLLER.get(), pos, state);
     }
@@ -67,6 +78,9 @@ public class ReactorControllerBlockEntity extends BlockEntity {
         ticks++;
         if (structure == null || ticks % VALIDATE_INTERVAL == 0) {
             revalidate(level);
+        }
+        if (ticks % 10 == 0) {
+            sendStatusToViewers(level);
         }
         if (structure == null || sim == null) {
             updateComparator(level, 0);
@@ -162,7 +176,7 @@ public class ReactorControllerBlockEntity extends BlockEntity {
 
         // 3) Mô phỏng
         int signal = level.getBestNeighborSignal(worldPosition);
-        setpoint = az5Latched ? 0.0 : signal / 15.0 * 1.5;
+        setpoint = az5Latched ? 0.0 : manualMode ? manualSetpoint : signal / 15.0 * 1.5;
         double heatPerMb = RbmkServerConfig.HEAT_PER_MB.get();
         ReactorSim.StepResult r = sim.step(dt, setpoint, water, backpressure, heatPerMb);
 
@@ -304,6 +318,96 @@ public class ReactorControllerBlockEntity extends BlockEntity {
 
     public int getComparatorOutput() { return comparator; }
 
+    /** Nút bấm từ GUI (xem ReactorControllerMenu.BTN_*). */
+    public void handleButton(int id) {
+        switch (id) {
+            case ReactorControllerMenu.BTN_MINUS -> {
+                if (!manualMode) enterManual();
+                manualSetpoint = Math.max(0.0, Math.round((manualSetpoint - 0.1) * 10.0) / 10.0);
+            }
+            case ReactorControllerMenu.BTN_PLUS -> {
+                if (!manualMode) enterManual();
+                manualSetpoint = Math.min(1.5, Math.round((manualSetpoint + 0.1) * 10.0) / 10.0);
+            }
+            case ReactorControllerMenu.BTN_MODE -> {
+                if (manualMode) manualMode = false;
+                else enterManual();
+            }
+            case ReactorControllerMenu.BTN_AZ5 -> triggerAz5();
+            case ReactorControllerMenu.BTN_RESET -> resetAz5();
+            default -> { }
+        }
+        setChanged();
+        if (level instanceof ServerLevel sl) sendStatusToViewers(sl);
+    }
+
+    /** Chuyển sang thủ công, giữ nguyên mức đang đặt để không bị giật công suất. */
+    private void enterManual() {
+        manualMode = true;
+        manualSetpoint = Math.round(Math.min(1.5, setpoint) * 10.0) / 10.0;
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("gui.rbmk.title");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return new ReactorControllerMenu(containerId, inventory, worldPosition);
+    }
+
+    public void sendStatusTo(ServerPlayer player) {
+        PacketDistributor.sendToPlayer(player, buildStatus());
+    }
+
+    private void sendStatusToViewers(ServerLevel level) {
+        ReactorStatusPayload payload = null;
+        for (ServerPlayer p : level.players()) {
+            if (p.containerMenu instanceof ReactorControllerMenu m && m.getPos().equals(worldPosition)) {
+                if (payload == null) payload = buildStatus();
+                PacketDistributor.sendToPlayer(p, payload);
+            }
+        }
+    }
+
+    private ReactorStatusPayload buildStatus() {
+        HexStructure s = structure;
+        ReactorSim sm = sim;
+        boolean formed = s != null && sm != null;
+        int n = formed ? s.cells().size() : 0;
+        byte[] qs = new byte[n];
+        byte[] rs = new byte[n];
+        byte[] types = new byte[n];
+        float[] temps = new float[n];
+        float[] fluxes = new float[n];
+        for (int i = 0; i < n; i++) {
+            HexStructure.Cell c = s.cells().get(i);
+            qs[i] = (byte) c.q();
+            rs[i] = (byte) c.r();
+            types[i] = c.type().id();
+            temps[i] = (float) sm.temp(i);
+            fluxes[i] = (float) sm.flux(i);
+        }
+        Component msg = formed ? Component.empty()
+                : (structureError != null ? structureError : Component.translatable("message.rbmk.not_checked"));
+        return new ReactorStatusPayload(worldPosition, formed, msg,
+                formed ? s.radius() : 0, formed ? s.height() : 0,
+                loadedFuel, fuelSlots, coolantPorts, outputPorts, az5Latched, manualMode,
+                (float) (az5Latched ? 0.0 : manualMode ? manualSetpoint : setpoint),
+                formed ? (float) sm.avgPower() : 0f,
+                formed ? (float) sm.maxTemp() : 20f,
+                RbmkServerConfig.RUPTURE_TEMP.get().floatValue(),
+                formed ? (float) sm.avgVoid() : 0f,
+                formed ? (float) sm.maxXenon() : 0f,
+                formed ? (float) sm.rodInsertion() : 1f,
+                formed ? (float) sm.waterFraction() : 1f,
+                (float) waterPerTick, (float) steamPerTick, (float) fePerTick, (float) backpressure,
+                RbmkServerConfig.ORM_WARNING.get().floatValue(),
+                qs, rs, types, temps, fluxes);
+    }
+
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
@@ -377,6 +481,8 @@ public class ReactorControllerBlockEntity extends BlockEntity {
         super.saveAdditional(tag, registries);
         tag.putBoolean("az5", az5Latched);
         tag.putDouble("backpressure", backpressure);
+        tag.putBoolean("manual", manualMode);
+        tag.putDouble("manualSetpoint", manualSetpoint);
         if (sim != null) {
             tag.put("sim", sim.save(registries));
         } else if (pendingSimTag != null) {
@@ -389,6 +495,8 @@ public class ReactorControllerBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         az5Latched = tag.getBoolean("az5");
         backpressure = tag.getDouble("backpressure");
+        manualMode = tag.getBoolean("manual");
+        if (tag.contains("manualSetpoint")) manualSetpoint = tag.getDouble("manualSetpoint");
         if (tag.contains("sim")) {
             pendingSimTag = tag.getCompound("sim");
         }

@@ -90,8 +90,8 @@ Nhiều graphite quá thì ít nhiên liệu → yếu; quá ít rod thì **khô
 
 | Thao tác | Tác dụng |
 |---|---|
-| Redstone vào Controller (0–15) | Mức công suất mong muốn: 0 = tắt, 10 = 100%, 15 = 150%. Bộ điều chỉnh tự động di chuyển rod |
-| Chuột phải Controller | Xem trạng thái (công suất, nhiệt độ, void, xenon, rod, nước, hơi, FE) |
+| Redstone vào Controller (0–15) | Ở chế độ Redstone: mức công suất mong muốn, 0 = tắt, 10 = 100%, 15 = 150%. Bấm ±10% trong GUI sẽ chuyển sang chế độ Thủ công |
+| Chuột phải Controller | Mở **GUI**: bản đồ lõi tô màu theo nhiệt độ (rê chuột vào ô để xem chi tiết), số liệu, nút −10% / +10%, chuyển Redstone ↔ Thủ công, AZ-5, Reset AZ-5 |
 | Shift + chuột phải Controller | Reset AZ-5 (chỉ khi rod đã cắm hết) |
 | Comparator từ Controller | Nhiệt độ cao nhất / ngưỡng vỡ kênh × 15 |
 | Chuột phải / xung redstone vào AZ-5 Panel | **SCRAM** — cắm toàn bộ rod |
@@ -162,7 +162,7 @@ Recipe máy của mod khác mà sai format thì bị bỏ qua và ghi log, **kh�
 
 ## 7. Chưa có trong 0.1.0
 
-GUI (hiện dùng redstone + chat), peripheral CC: Tweaked, xuất hơi dạng chemical / phóng xạ của Mekanism,
+Peripheral CC: Tweaked, xuất hơi dạng chemical / phóng xạ của Mekanism,
 Refueling Machine, Reprocessing Port, nhóm rod riêng.
 
 Thư mục `tools/` chứa script Python dùng để chỉnh hằng số vật lý (`ReactorSim.java` là bản port 1:1).
