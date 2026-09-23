@@ -16,6 +16,7 @@ public record ReactorStatusPayload(
         boolean az5, boolean manual,
         float setpoint, float power, float maxTemp, float ruptureTemp, float voidFrac, float xenon, float rod,
         float waterFrac, float waterPerTick, float steamPerTick, float fePerTick, float backpressure, float ormWarning,
+        long waterStored, long waterCapacity, long steamStored, long steamCapacity, long feStored, long feCapacity, float feOutPerTick,
         byte[] qs, byte[] rs, byte[] types, float[] temps, float[] fluxes
 ) implements CustomPacketPayload {
 
@@ -55,6 +56,13 @@ public record ReactorStatusPayload(
         buf.writeFloat(fePerTick);
         buf.writeFloat(backpressure);
         buf.writeFloat(ormWarning);
+        buf.writeVarLong(waterStored);
+        buf.writeVarLong(waterCapacity);
+        buf.writeVarLong(steamStored);
+        buf.writeVarLong(steamCapacity);
+        buf.writeVarLong(feStored);
+        buf.writeVarLong(feCapacity);
+        buf.writeFloat(feOutPerTick);
         buf.writeByteArray(qs);
         buf.writeByteArray(rs);
         buf.writeByteArray(types);
@@ -89,6 +97,13 @@ public record ReactorStatusPayload(
         float fePerTick = buf.readFloat();
         float backpressure = buf.readFloat();
         float ormWarning = buf.readFloat();
+        long waterStored = buf.readVarLong();
+        long waterCapacity = buf.readVarLong();
+        long steamStored = buf.readVarLong();
+        long steamCapacity = buf.readVarLong();
+        long feStored = buf.readVarLong();
+        long feCapacity = buf.readVarLong();
+        float feOutPerTick = buf.readFloat();
         byte[] qs = buf.readByteArray();
         byte[] rs = buf.readByteArray();
         byte[] types = buf.readByteArray();
@@ -98,6 +113,8 @@ public record ReactorStatusPayload(
         for (int i = 0; i < fluxes.length; i++) fluxes[i] = buf.readFloat();
         return new ReactorStatusPayload(pos, formed, message, radius, height, loadedFuel, fuelSlots, coolantPorts,
                 outputPorts, az5, manual, setpoint, power, maxTemp, ruptureTemp, voidFrac, xenon, rod, waterFrac,
-                waterPerTick, steamPerTick, fePerTick, backpressure, ormWarning, qs, rs, types, temps, fluxes);
+                waterPerTick, steamPerTick, fePerTick, backpressure, ormWarning,
+                waterStored, waterCapacity, steamStored, steamCapacity, feStored, feCapacity, feOutPerTick,
+                qs, rs, types, temps, fluxes);
     }
 }

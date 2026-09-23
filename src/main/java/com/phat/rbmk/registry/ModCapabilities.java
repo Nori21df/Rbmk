@@ -11,6 +11,10 @@ public final class ModCapabilities {
                 (be, side) -> be.getFluidCapability());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.CONTROLLER.get(),
                 (be, side) -> be.getAutomationHandler());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.CONTROLLER.get(),
+                (be, side) -> be.getEnergyCapability());
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModBlockEntities.CONTROLLER.get(),
+                (be, side) -> be.getFluidCapability());
     }
 
     private ModCapabilities() {}

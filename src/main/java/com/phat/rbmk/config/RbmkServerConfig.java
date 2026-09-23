@@ -53,7 +53,8 @@ public final class RbmkServerConfig {
         B.push("balance");
         HEAT_PER_MB = B.comment("Nhiệt (HU) cần để tạo 1 mB hơi. Mỗi khối nhiên liệu sinh 1000 HU/s ở công suất danh định")
                 .defineInRange("heatPerMb", 2.5, 0.1, 1000.0);
-        FE_PER_MB = B.comment("FE mà Energy Port tạo ra từ 1 mB hơi").defineInRange("fePerMbSteam", 20.0, 0.0, 10000.0);
+        FE_PER_MB = B.comment("FE tạo ra từ 1 mB hơi khi có Energy Port. Mặc định 30000 = 600k FE/t mỗi khối nhiên liệu ở 100%",
+                "(lò tối đa bán kính 7, cao 10, 150% ≈ 1 tỉ FE/t)").defineInRange("fePerMbSteam", 30000.0, 0.0, 1.0e9);
         BURN_SECONDS = B.comment("Số giây chạy ở 100% để 1 bó nhiên liệu cháy hết").defineInRange("fuelBurnSeconds", 7200.0, 60.0, 1.0e7);
         B.pop();
     }

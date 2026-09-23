@@ -34,6 +34,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.minecraft.world.item.ItemStack;
+import com.phat.rbmk.block.PortBlock;
+import com.phat.rbmk.registry.ModFluids;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import com.phat.rbmk.registry.ModItems;
 
 public class ReactorControllerBlockEntity extends BlockEntity implements MenuProvider {
@@ -62,6 +68,19 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     private int coolantPorts;
     private int outputPorts;
     private double venting;
+
+    // Kho FE chung (long) — Energy Port và chính Controller rút FE từ đây
+    public static final long FE_CAPACITY = 64_000_000_000L;
+    private long feStored;
+    private long feOutAccum;
+    private double feOutPerTick;
+    private double feInPerTick;
+    private long waterStored;
+    private long waterCapacity;
+    private long steamStored;
+    private long steamCapacity;
+    private final IEnergyStorage energyCap = new ControllerEnergy();
+    private final IFluidHandler fluidCap = new ControllerFluid();
     private double protectTimer;
     @Nullable private String tripReason;
 
@@ -91,6 +110,10 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         ticks++;
         if (structure == null || ticks % VALIDATE_INTERVAL == 0) {
             revalidate(level);
+        }
+        if (ticks % 20 == 0) {
+            feOutPerTick = feOutAccum / 20.0;
+            feOutAccum = 0;
         }
         if (ticks % 10 == 0) {
             sendStatusToViewers(level);
@@ -141,6 +164,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         }
         structure = fresh;
         structureError = null;
+        for (BlockPos p : fresh.ports()) {
+            if (level.getBlockEntity(p) instanceof PortBlockEntity port) port.linkController(worldPosition);
+        }
     }
 
     private void simulate(ServerLevel level, HexStructure s, ReactorSim sim, double dt, int interval) {
@@ -185,6 +211,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         }
         long water = 0;
         for (PortBlockEntity c : coolant) water += c.getWater();
+        waterStored = water;
+        waterCapacity = (long) coolant.size() * PortBlockEntity.TANK_CAPACITY;
+        steamCapacity = (long) steam.size() * PortBlockEntity.TANK_CAPACITY;
         loadedFuel = loadedTotal;
         fuelSlots = slotTotal;
         coolantPorts = coolant.size();
@@ -207,15 +236,14 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         double steamLeft = r.steamMb();
         double fePerMb = RbmkServerConfig.FE_PER_MB.get();
         double feMade = 0;
-        if (fePerMb > 0) {
-            for (PortBlockEntity e : energy) {
-                if (steamLeft <= 0) break;
-                double canMb = e.energySpace() / fePerMb;
-                double useMb = Math.min(steamLeft, canMb);
-                int fe = e.acceptEnergy((long) Math.floor(useMb * fePerMb));
-                feMade += fe;
-                steamLeft -= fe / fePerMb;
-            }
+        if (fePerMb > 0 && !energy.isEmpty() && steamLeft > 0) {
+            // Energy Port = turbine: đổi hơi thành FE vào kho chung (long)
+            double canMb = (FE_CAPACITY - feStored) / fePerMb;
+            double useMb = Math.max(0, Math.min(steamLeft, canMb));
+            long fe = (long) Math.floor(useMb * fePerMb);
+            feStored += fe;
+            feMade = fe;
+            steamLeft -= useMb;
         }
         for (PortBlockEntity st : steam) {
             if (steamLeft < 1) break;
@@ -235,8 +263,12 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         backpressure = r.steamMb() > 1 ? Math.min(1.0, steamLeft / r.steamMb()) : 0.0;
 
         steamPerTick = (r.steamMb() - steamLeft) / interval;
+        long steamSum = 0;
+        for (PortBlockEntity st : steam) steamSum += st.getFluidAmount();
+        steamStored = steamSum;
+        feInPerTick = feMade / interval;
         waterPerTick = r.waterUsedMb() / interval;
-        fePerTick = feMade / interval;
+        fePerTick = feMade / (double) interval;
 
         // 6) Độ cháy nhiên liệu
         double burnSeconds = RbmkServerConfig.BURN_SECONDS.get();
@@ -383,6 +415,110 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     public int getComparatorOutput() { return comparator; }
 
     // =====================================================================
+    // Kho FE / nước chung
+    // =====================================================================
+
+    public long getFeStored() { return feStored; }
+
+    public int extractFe(int max, boolean simulate) {
+        long take = Math.min(Math.max(0, max), feStored);
+        if (!simulate && take > 0) {
+            feStored -= take;
+            feOutAccum += take;
+            setChanged();
+        }
+        return (int) take;
+    }
+
+    public IEnergyStorage getEnergyCapability() { return energyCap; }
+
+    public IFluidHandler getFluidCapability() { return fluidCap; }
+
+    private List<PortBlockEntity> ports(PortBlock.PortType type) {
+        List<PortBlockEntity> list = new ArrayList<>();
+        if (structure == null || level == null) return list;
+        for (BlockPos p : structure.ports()) {
+            if (level.getBlockEntity(p) instanceof PortBlockEntity port && port.getPortType() == type) list.add(port);
+        }
+        return list;
+    }
+
+    public static String formatBig(double v) {
+        double a = Math.abs(v);
+        if (a >= 1e12) return String.format("%.2fT", v / 1e12);
+        if (a >= 1e9) return String.format("%.2fB", v / 1e9);
+        if (a >= 1e6) return String.format("%.2fM", v / 1e6);
+        if (a >= 1e4) return String.format("%.1fk", v / 1e3);
+        return String.valueOf(Math.round(v));
+    }
+
+    /** Cáp nối thẳng vào Controller cũng rút được FE. */
+    private final class ControllerEnergy implements IEnergyStorage {
+        @Override public int receiveEnergy(int max, boolean simulate) { return 0; }
+        @Override public int extractEnergy(int max, boolean simulate) { return extractFe(max, simulate); }
+        @Override public int getEnergyStored() { return (int) Math.min(Integer.MAX_VALUE, feStored); }
+        @Override public int getMaxEnergyStored() { return (int) Math.min(Integer.MAX_VALUE, FE_CAPACITY); }
+        @Override public boolean canExtract() { return true; }
+        @Override public boolean canReceive() { return false; }
+    }
+
+    /** Ống nối vào Controller: bơm nước vào (chia cho Coolant Port), hút hơi ra (từ Steam Port). */
+    private final class ControllerFluid implements IFluidHandler {
+        @Override public int getTanks() { return 2; }
+
+        @Override
+        public FluidStack getFluidInTank(int tank) {
+            long sum = 0;
+            for (PortBlockEntity p : ports(tank == 0 ? PortBlock.PortType.COOLANT : PortBlock.PortType.STEAM)) sum += p.getFluidAmount();
+            int amount = (int) Math.min(Integer.MAX_VALUE, sum);
+            if (amount <= 0) return FluidStack.EMPTY;
+            return tank == 0 ? new FluidStack(Fluids.WATER, amount) : new FluidStack(ModFluids.STEAM.get(), amount);
+        }
+
+        @Override
+        public int getTankCapacity(int tank) {
+            return (int) Math.min(Integer.MAX_VALUE,
+                    (long) ports(tank == 0 ? PortBlock.PortType.COOLANT : PortBlock.PortType.STEAM).size() * PortBlockEntity.TANK_CAPACITY);
+        }
+
+        @Override
+        public boolean isFluidValid(int tank, FluidStack stack) {
+            return tank == 0 ? stack.is(Fluids.WATER) : stack.is(ModFluids.STEAM.get());
+        }
+
+        @Override
+        public int fill(FluidStack resource, FluidAction action) {
+            if (resource.isEmpty() || !resource.is(Fluids.WATER)) return 0;
+            int filled = 0;
+            for (PortBlockEntity p : ports(PortBlock.PortType.COOLANT)) {
+                IFluidHandler h = p.getFluidCapability();
+                if (h == null) continue;
+                filled += h.fill(resource.copyWithAmount(resource.getAmount() - filled), action);
+                if (filled >= resource.getAmount()) break;
+            }
+            return filled;
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, FluidAction action) {
+            if (resource.isEmpty() || !resource.is(ModFluids.STEAM.get())) return FluidStack.EMPTY;
+            return drain(resource.getAmount(), action);
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, FluidAction action) {
+            int drained = 0;
+            for (PortBlockEntity p : ports(PortBlock.PortType.STEAM)) {
+                IFluidHandler h = p.getFluidCapability();
+                if (h == null) continue;
+                drained += h.drain(maxDrain - drained, action).getAmount();
+                if (drained >= maxDrain) break;
+            }
+            return drained > 0 ? new FluidStack(ModFluids.STEAM.get(), drained) : FluidStack.EMPTY;
+        }
+    }
+
+    // =====================================================================
     // Tự nạp nhiên liệu
     // =====================================================================
 
@@ -469,6 +605,14 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
                 if (!manualMode) enterManual();
                 manualSetpoint = Math.max(0.0, Math.round((manualSetpoint - 0.1) * 10.0) / 10.0);
             }
+            case ReactorControllerMenu.BTN_MINUS_SMALL -> {
+                if (!manualMode) enterManual();
+                manualSetpoint = Math.max(0.0, Math.round((manualSetpoint - 0.01) * 100.0) / 100.0);
+            }
+            case ReactorControllerMenu.BTN_PLUS_SMALL -> {
+                if (!manualMode) enterManual();
+                manualSetpoint = Math.min(1.5, Math.round((manualSetpoint + 0.01) * 100.0) / 100.0);
+            }
             case ReactorControllerMenu.BTN_PLUS -> {
                 if (!manualMode) enterManual();
                 manualSetpoint = Math.min(1.5, Math.round((manualSetpoint + 0.1) * 10.0) / 10.0);
@@ -549,6 +693,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
                 formed ? (float) sm.waterFraction() : 1f,
                 (float) waterPerTick, (float) steamPerTick, (float) fePerTick, (float) Math.max(backpressure, -venting),
                 RbmkServerConfig.ORM_WARNING.get().floatValue(),
+                waterStored, waterCapacity, steamStored, steamCapacity, feStored, FE_CAPACITY, (float) feOutPerTick,
                 qs, rs, types, temps, fluxes);
     }
 
@@ -624,6 +769,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("az5", az5Latched);
+        tag.putLong("feStored", feStored);
         tag.putDouble("backpressure", backpressure);
         tag.putBoolean("manual", manualMode);
         tag.put("fuelInput", fuelInput.serializeNBT(registries));
@@ -640,6 +786,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         az5Latched = tag.getBoolean("az5");
+        feStored = tag.getLong("feStored");
         backpressure = tag.getDouble("backpressure");
         manualMode = tag.getBoolean("manual");
         if (tag.contains("fuelInput")) fuelInput.deserializeNBT(registries, tag.getCompound("fuelInput"));

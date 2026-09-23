@@ -102,7 +102,10 @@ Nhiều graphite quá thì ít nhiên liệu → yếu; quá ít rod thì **khô
 **Port:**
 - **Coolant Port** — bơm nước vào (64 000 mB). Lò tiêu thụ khoảng **20 mB/tick cho mỗi khối nhiên liệu** ở 100%.
 - **Steam Port** — xuất hơi `rbmk:steam` (tag `c:steam`), tự đẩy sang ống/turbine kề bên.
-- **Energy Port** — đổi hơi thành FE trực tiếp (mặc định 20 FE/mB ≈ 400 FE/t mỗi khối nhiên liệu ở 100%), tự đẩy FE ra xung quanh.
+- **Energy Port** — turbine: đổi hơi thành FE vào **kho FE chung 64 tỉ FE** trong Controller (mặc định 30 000 FE/mB ≈ **600k FE/t mỗi khối nhiên liệu ở 100%**), tự đẩy FE ra cáp xung quanh.
+- **Controller** cũng nhận nước qua ống (chia vào Coolant Port) và cho cáp rút FE / ống hút hơi trực tiếp.
+
+**Công suất tham khảo:** lò bán kính 4 cao 4 (168 khối nhiên liệu) ≈ 100M FE/t ở 100%, 150M ở 150%. Lò lớn nhất (bán kính 7, cao 10) ≈ 1 tỉ FE/t ở 150%.
 
 Hơi được ưu tiên cho Energy Port, sau đó Steam Port. **Hơi không thoát được = áp suất ngược = lò mất làm mát.**
 
@@ -158,7 +161,7 @@ Recipe máy của mod khác mà sai format thì bị bỏ qua và ghi log, **kh�
 | `structure.maxRadius` / `maxHeight` | 7 / 10 | Kích thước tối đa |
 | `structure.simInterval` | 5 | Tick giữa mỗi bước mô phỏng |
 | `balance.heatPerMb` | 2.5 | Nhiệt cho 1 mB hơi |
-| `balance.fePerMbSteam` | 20 | FE mỗi mB hơi ở Energy Port |
+| `balance.fePerMbSteam` | 30000 | FE mỗi mB hơi ở Energy Port |
 | `balance.fuelBurnSeconds` | 7200 | Giây chạy 100% để cạn 1 bó nhiên liệu |
 
 ---

@@ -27,12 +27,14 @@ public class ReactorControllerMenu extends AbstractContainerMenu {
     public static final int BTN_MODE = 2;
     public static final int BTN_AZ5 = 3;
     public static final int BTN_RESET = 4;
+    public static final int BTN_MINUS_SMALL = 5;
+    public static final int BTN_PLUS_SMALL = 6;
 
     // Vị trí slot trong GUI (dùng chung với Screen)
     public static final int INV_TOP = 238;
     public static final int FUEL_X = 9;
     public static final int SPENT_X = 71;
-    public static final int PLAYER_X = 175;
+    public static final int PLAYER_X = 203;
 
     private static final int FUEL_END = FuelInputHandler.SLOTS;
     private static final int SPENT_END = FUEL_END + SpentOutputHandler.SLOTS;
