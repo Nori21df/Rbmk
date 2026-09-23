@@ -20,13 +20,13 @@ import net.minecraft.nbt.Tag;
  */
 public class ReactorSim {
     // ---- Hằng số vật lý (gameplay) ----
-    static final double K_FUEL = 1.23;          // hệ số nhân cơ bản của kênh nhiên liệu
+    static final double K_FUEL = 1.30;          // hệ số nhân cơ bản của kênh nhiên liệu
     static final double MOD = 0.12;             // thưởng điều tiết theo số ô graphite kề
     static final double K_GRAPHITE = 0.97;
     static final double K_WATER = 0.88;
     static final double K_ROD_OUT = 0.88;       // kênh rod khi rút ra = đầy nước
-    static final double ROD_NEIGH = 3.0;        // rod hấp thụ neutron của kênh nhiên liệu kề
-    static final double TIP_BONUS = 1.0;        // hiệu ứng đầu graphite (AZ-5)
+    static final double ROD_NEIGH = 4.0;        // rod hấp thụ neutron của kênh nhiên liệu kề
+    static final double TIP_BONUS = 2.0;        // hiệu ứng đầu graphite (AZ-5)
     static final double TIP_LEN = 0.35;         // phần hành trình rod có đầu graphite chiếm chỗ nước
     static final double WATER_ABS = 0.05;       // nước lỏng hấp thụ neutron -> void coefficient dương
     static final double VOID_SPAN = 60.0;
@@ -50,6 +50,8 @@ public class ReactorSim {
     static final double ROD_WITHDRAW_SPEED = 0.05;
     static final double ROD_INSERT_SPEED = 0.12;
     static final double SCRAM_SPEED = 0.08;     // AZ-5 chậm như RBMK thật
+    static final double ROD_FAST_INSERT = 0.8;  // bộ điều chỉnh khi công suất vượt mục tiêu > 10%
+    static final double FAST_SCRAM_SPEED = 0.5; // bảo vệ tự động (BAZ): nhanh, không có hiệu ứng đầu graphite
 
     // ---- Cấu trúc ----
     private final int n;
@@ -73,6 +75,8 @@ public class ReactorSim {
     private double rodTarget = 1.0;
     private boolean inserting;
     private boolean scram;
+    private boolean fastScram;
+    private boolean overshoot;
     private double lastLogPower = Double.NaN;
 
     // ---- Kết quả bước gần nhất ----
@@ -164,7 +168,7 @@ public class ReactorSim {
 
         // Hiệu ứng đầu graphite: rod đang cắm vào từ vị trí rút gần hết -> graphite đẩy nước ra khỏi đáy kênh
         double tip = 1.0;
-        if (inserting && rod < TIP_LEN) {
+        if (inserting && rod < TIP_LEN && !fastScram) {
             tip = 1.0 + TIP_BONUS * (1.0 - rod / TIP_LEN) * (1.0 - avgVoid);
         }
 
@@ -247,10 +251,13 @@ public class ReactorSim {
             rodTarget = 1.0;
             return;
         }
+        overshoot = false;
         if (setpoint <= 1e-3) {
+            overshoot = true;
             rodTarget = 1.0;
             return;
         }
+        overshoot = avgPower > setpoint * 1.1;
         double want = Math.max(-0.05, Math.min(0.03, Math.log(setpoint / Math.max(avgPower, 1e-6)) / 30.0));
         rodTarget = Math.max(0.0, Math.min(1.0, rod + (rate - want) * 2.0));
     }
@@ -258,7 +265,8 @@ public class ReactorSim {
     private void moveRods(double dt) {
         if (rod < rodTarget) {
             inserting = true;
-            double speed = scram ? SCRAM_SPEED : ROD_INSERT_SPEED;
+            double speed = scram ? (fastScram ? FAST_SCRAM_SPEED : SCRAM_SPEED)
+                    : (overshoot ? ROD_FAST_INSERT : ROD_INSERT_SPEED);
             rod = Math.min(rodTarget, rod + speed * dt);
         } else if (rod > rodTarget) {
             inserting = false;
@@ -270,7 +278,16 @@ public class ReactorSim {
 
     // ---------- Điều khiển ----------
 
-    public void setScram(boolean scram) { this.scram = scram; }
+    public void setScram(boolean scram) {
+        this.scram = scram;
+        if (!scram) fastScram = false;
+    }
+
+    /** SCRAM nhanh của hệ thống bảo vệ tự động: rod thế hệ mới, không có đầu graphite gây tăng phản ứng. */
+    public void fastScram() {
+        this.scram = true;
+        this.fastScram = true;
+    }
 
     public boolean isScram() { return scram; }
 

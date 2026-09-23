@@ -2,7 +2,7 @@ import math
 from sim_core import *
 import sim_core as sim
 # Hằng số cuối cùng, khớp với ReactorSim.java
-sim.P.update(K_FUEL=1.23,ROD_NEIGH=3.0,XE_ABS=0.04,GEN=1.0,S0=1e-3,TIP_FUEL=1.0,TIP_LEN=0.35,GEN_PROMPT=0.05,BETA=0.06,WATER_ABS=0.05,VOID_SPAN=60.0)
+sim.P.update(K_FUEL=1.30,ROD_NEIGH=4.0,XE_ABS=0.04,GEN=1.0,S0=1e-3,TIP_FUEL=2.0,TIP_LEN=0.35,GEN_PROMPT=0.05,BETA=0.06,WATER_ABS=0.05,VOID_SPAN=60.0)
 def reg(s,set_pt,avg,dt,speed=0.12):
     if s.scram: s.rodTarget=1.0; s.speed=0.12; return
     s.speed=speed

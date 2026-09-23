@@ -316,6 +316,7 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         }
         if (reason != null && protectTimer >= 3.0) {
             triggerAz5();
+            sim.fastScram();
             tripReason = reason;
             Component msg = Component.translatable("message.rbmk.auto_trip", Component.translatable(reason))
                     .withStyle(ChatFormatting.GOLD);
